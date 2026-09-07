@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Posta Volante — e-mail temporário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE7DA;
+    --paper-dim:#E1D9C8;
+    --ink:#202B38;
+    --ink-soft:#4B5866;
+    --postmark:#B23A2E;
+    --kraft:#A9865A;
+    --void:#12171D;
+    --radius:14px;
+  }
+  body.dark{
+    --paper:#1B2028;
+    --paper-dim:#242A34;
+    --ink:#EDE7DA;
+    --ink-soft:#9AA4B0;
+    --postmark:#E1594A;
+    --kraft:#C9A06D;
+    --void:#0B0E12;
+  }
+  *{box-sizing:border-box;}
+  html, body{
+    -webkit-touch-callout:none;
+  }
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(32,43,56,0.06) 1px, transparent 0);
+    background-size:22px 22px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px 80px;
+    transition:background-color .2s ease, color .2s ease;
+  }
+  body.dark{
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(237,231,218,0.06) 1px, transparent 0);
+  }
+  .top-row{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+  }
+  .theme-toggle{
+    flex:none;
+    width:38px; height:38px; border-radius:50%;
+    background:var(--paper-dim);
+    border:1px solid rgba(32,43,56,0.14);
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+    padding:0;
+  }
+  body.dark .theme-toggle{border-color:rgba(237,231,218,0.18);}
+  a,button{font-family:inherit;}
+  .sheet{
+    width:100%;
+    max-width:480px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--kraft);
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:32px;
+    line-height:1.05;
+    margin:0 0 26px;
+  }
+  .card{
+    background:var(--paper-dim);
+    border:1px solid rgba(32,43,56,0.14);
+    border-radius:var(--radius);
+    padding:22px;
+    margin-bottom:18px;
+  }
+
+  .stamp-row{
+    display:flex;
+    align-items:center;
+    gap:18px;
+  }
+  .postmark{
+    --pct:0;
+    position:relative;
+    width:74px;
+    height:74px;
+    flex:none;
+    border-radius:50%;
+    background:conic-gradient(var(--postmark) calc(var(--pct)*1%), rgba(32,43,56,0.12) 0);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .postmark::before{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border-radius:50%;
+    border:1.5px dashed var(--ink);
+    opacity:.35;
+  }
+  .postmark span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink);
+  }
+  .addr-block{flex:1; min-width:0;}
+  .addr{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:16px;
+    word-break:break-all;
+    color:var(--ink);
+  }
+  .addr-empty{color:var(--ink-soft); font-style:italic; font-size:14px;}
+
+  .permanent-check{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--ink-soft);
+    margin-top:16px; cursor:pointer;
+  }
+  .permanent-check input{accent-color:var(--postmark); width:15px; height:15px;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;}
+  .msg .msg-delete{
+    margin-top:8px;
+  }
+  button{
+    cursor:pointer;
+    border:none;
+    border-radius:999px;
+    padding:10px 18px;
+    font-size:13px;
+    font-weight:600;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  button:active{transform:scale(.96);}
+  button:focus-visible{outline:2px solid var(--postmark); outline-offset:2px;}
+  .btn-primary{background:var(--ink); color:var(--paper);}
+  .btn-ghost{background:transparent; color:var(--ink); border:1px solid rgba(32,43,56,0.3);}
+  .btn-primary:disabled{opacity:.45; cursor:not-allowed;}
+
+  select{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    padding:9px 12px;
+    border-radius:999px;
+    border:1px solid rgba(32,43,56,0.3);
+    background:var(--paper);
+    color:var(--ink);
+  }
+
+  .section-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+  }
+  .msg-list{list-style:none; margin:0; padding:0;}
+  .msg{
+    padding:14px 4px;
+    border-bottom:1px solid rgba(32,43,56,0.12);
+    cursor:pointer;
+  }
+  .msg:last-child{border-bottom:none;}
+  .msg:hover{background:rgba(32,43,56,0.04);}
+  .msg-from{font-size:12px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;}
+  .msg-subject{font-size:15px; margin-top:2px;}
+  .empty{
+    text-align:center;
+    padding:30px 10px;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(18,23,29,0.55);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:40px 16px; overflow-y:auto; z-index:10;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--paper); border-radius:var(--radius);
+    max-width:560px; width:100%; padding:22px;
+  }
+  .modal h2{font-family:'Fraunces',serif; font-size:20px; margin:0 0 4px;}
+  .modal .msg-from{margin-bottom:14px;}
+  .modal iframe{
+    width:100%; min-height:260px; border:1px solid rgba(32,43,56,0.15);
+    border-radius:10px; background:#fff;
+  }
+  body.dark .modal-backdrop{background:rgba(0,0,0,0.7);}
+  .modal pre{
+    white-space:pre-wrap; font-family:'Inter',sans-serif; font-size:14px;
+    line-height:1.5; margin:0;
+  }
+  .modal .close{margin-top:16px;}
+
+  footer{
+    max-width:480px; margin:26px auto 0; text-align:center;
+    font-size:12px; color:var(--ink-soft);
+  }
+
+  .auth-bar{
+    display:flex; align-items:center; justify-content:flex-end;
+    gap:10px; margin:-6px 0 18px; font-size:13px; color:var(--ink-soft);
+  }
+  .auth-bar button{padding:7px 14px; font-size:12.5px;}
+  .auth-tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .auth-tabs button{flex:1; background:var(--paper-dim); color:var(--ink-soft);}
+  .auth-tabs button.active{background:var(--ink); color:var(--paper);}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; color:var(--ink-soft); margin-bottom:5px; font-family:'IBM Plex Mono',monospace;}
+  .field input{
+    width:100%; background:var(--paper); color:var(--ink);
+    border:1px solid rgba(32,43,56,0.25); border-radius:8px;
+    padding:10px 12px; font-size:14px; font-family:inherit;
+  }
+  .field input:focus{outline:2px solid var(--postmark); outline-offset:1px;}
+  .auth-error{font-size:12.5px; color:var(--postmark); min-height:16px; margin:-4px 0 10px;}
+  .msg-claim{margin-top:8px; margin-left:8px;}
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="top-row">
+      <div>
+        <p class="eyebrow">Posta Volante</p>
+        <h1>Um endereço que existe só o tempo necessário.</h1>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar modo escuro">🌙</button>
+    </div>
+
+    <div class="auth-bar" id="authBar">
+      <button class="btn-ghost" id="loginOpenBtn" type="button">Entrar</button>
+    </div>
+
+    <div class="card">
+      <div class="stamp-row">
+        <div class="postmark" id="postmark"><span id="postmarkLabel">—</span></div>
+        <div class="addr-block">
+          <div class="addr addr-empty" id="addrText">Nenhum endereço gerado ainda.</div>
+        </div>
+      </div>
+      <label class="permanent-check">
+        <input type="checkbox" id="permanentCheck" />
+        Não expira — salvar na caixinha
+      </label>
+      <div class="row">
+        <select id="ttlSelect">
+          <option value="10">expira em 10 min</option>
+          <option value="30" selected>expira em 30 min</option>
+          <option value="60">expira em 1 h</option>
+          <option value="1440">expira em 24 h</option>
+        </select>
+        <button class="btn-primary" id="generateBtn">Gerar endereço</button>
+        <button class="btn-ghost" id="copyBtn" disabled>Copiar</button>
+        <button class="btn-ghost" id="renewBtn" disabled>Renovar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Caixa de entrada</p>
+      <ul class="msg-list" id="msgList"></ul>
+      <div class="empty" id="emptyState">Gere um endereço para começar a receber mensagens.</div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Caixinha — endereços permanentes</p>
+      <ul class="msg-list" id="savedList"></ul>
+      <div class="empty" id="savedEmpty">Nenhum endereço permanente salvo ainda.</div>
+    </div>
+  </div>
+
+  <footer>As mensagens somem quando o endereço expira.</footer>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <h2 id="modalSubject"></h2>
+      <div class="msg-from" id="modalFrom"></div>
+      <iframe id="modalHtml" sandbox style="display:none;"></iframe>
+      <pre id="modalText"></pre>
+      <button class="btn-ghost close" id="modalClose">Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="authBackdrop">
+    <div class="modal">
+      <div class="auth-tabs">
+        <button class="active" id="tabLogin" type="button">Entrar</button>
+        <button id="tabRegister" type="button">Criar conta</button>
+      </div>
+      <h2 id="authTitle">Entrar</h2>
+      <div class="field">
+        <label for="authUser">Usuário</label>
+        <input id="authUser" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="authPass">Senha</label>
+        <input id="authPass" type="password" autocomplete="current-password" />
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div class="row" style="margin-top:0;">
+        <button class="btn-primary" id="authSubmit" type="button">Entrar</button>
+        <button class="btn-ghost close" id="authClose" type="button">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API_BASE = "https://COLOQUE-SEU-WORKER-AQUI.workers.dev";
+
+  const $ = (id) => document.getElementById(id);
+  const generateBtn = $("generateBtn");
+  const copyBtn = $("copyBtn");
+  const renewBtn = $("renewBtn");
+  const ttlSelect = $("ttlSelect");
+  const addrText = $("addrText");
+  const postmark = $("postmark");
+  const postmarkLabel = $("postmarkLabel");
+  const msgList = $("msgList");
+  const emptyState = $("emptyState");
+
+  let state = { address: null, createdAt: null, expiresAt: null, permanent: false };
+  let pollTimer = null;
+  let tickTimer = null;
+
+  const SAVED_KEY = "postavolante_saved_addresses";
+  const SESSION_KEY = "postavolante_current_session";
+  const THEME_KEY = "postavolante_theme";
+  const AUTH_TOKEN_KEY = "postavolante_auth_token";
+  const AUTH_USER_KEY = "postavolante_auth_username";
+
+  let authMode = "login";
+  function getToken() { return localStorage.getItem(AUTH_TOKEN_KEY) || null; }
+  function getAuthUsername() { return localStorage.getItem(AUTH_USER_KEY) || null; }
+  function setAuth(token, username) {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+    localStorage.setItem(AUTH_USER_KEY, username);
+  }
+  function clearAuth() {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+  }
+  function authHeaders() {
+    const t = getToken();
+    return t ? { Authorization: `Bearer ${t}` } : {};
+  }
+
+  function renderAuthBar() {
+    const bar = $("authBar");
+    const username = getAuthUsername();
+    bar.innerHTML = "";
+    if (username) {
+      const label = document.createElement("span");
+      label.textContent = `Olá, ${username}`;
+      const out = document.createElement("button");
+      out.className = "btn-ghost";
+      out.type = "button";
+      out.textContent = "Sair";
+      out.addEventListener("click", () => { clearAuth(); renderAuthBar(); renderSaved(); });
+      bar.appendChild(label);
+      bar.appendChild(out);
+    } else {
+      const inBtn = document.createElement("button");
+      inBtn.className = "btn-ghost";
+      inBtn.type = "button";
+      inBtn.id = "loginOpenBtn";
+      inBtn.textContent = "Entrar";
+      inBtn.addEventListener("click", () => openAuthModal("login"));
+      bar.appendChild(inBtn);
+    }
+  }
+
+  function openAuthModal(mode) {
+    setAuthMode(mode || "login");
+    $("authError").textContent = "";
+    $("authUser").value = "";
+    $("authPass").value = "";
+    $("authBackdrop").classList.add("open");
+  }
+  function setAuthMode(mode) {
+    authMode = mode;
+    $("tabLogin").classList.toggle("active", mode === "login");
+    $("tabRegister").classList.toggle("active", mode === "register");
+    $("authTitle").textContent = mode === "login" ? "Entrar" : "Criar conta";
+    $("authSubmit").textContent = mode === "login" ? "Entrar" : "Criar conta";
+  }
+
+  async function submitAuth() {
+    const username = $("authUser").value.trim();
+    const password = $("authPass").value;
+    $("authError").textContent = "";
+    if (!username || !password) { $("authError").textContent = "Preenche usuário e senha."; return; }
+
+    $("authSubmit").disabled = true;
+    try {
+      const path = authMode === "login" ? "/api/auth/login" : "/api/auth/register";
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "falha ao entrar");
+
+      setAuth(data.token, data.username);
+      renderAuthBar();
+      $("authBackdrop").classList.remove("open");
+      await syncOwnedAddresses();
+    } catch (err) {
+      $("authError").textContent = err.message || "Erro ao entrar.";
+    } finally {
+      $("authSubmit").disabled = false;
+    }
+  }
+
+  async function syncOwnedAddresses() {
+    if (!getToken()) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/me/addresses`, { headers: authHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+      const local = getSaved();
+      const known = new Set(local.map((a) => a.address));
+      for (const a of data.addresses || []) {
+        if (!known.has(a.address)) local.push({ address: a.address, created_at: a.created_at });
+      }
+      setSaved(local);
+      renderSaved();
+    } catch (err) { console.error(err); }
+  }
+
+  async function claimAddress(address, btn) {
+    if (!getToken()) { openAuthModal("login"); return; }
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ address }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "falha ao vincular");
+      btn.textContent = "Vinculado ✓";
+    } catch (err) {
+      btn.textContent = "Vincular à conta";
+      btn.disabled = false;
+      alert(err.message || "erro ao vincular");
+    }
+  }
+
+  const themeToggle = $("themeToggle");
+  function applyTheme(theme) {
+    document.body.classList.toggle("dark", theme === "dark");
+    themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  }
+  function initTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(saved || (prefersDark ? "dark" : "light"));
+  }
+  themeToggle.addEventListener("click", () => {
+    const next = document.body.classList.contains("dark") ? "light" : "dark";
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
+  initTheme();
+
+  function saveSession() {
+    if (!state.address) {
+      localStorage.removeItem(SESSION_KEY);
+      return;
+    }
+    localStorage.setItem(SESSION_KEY, JSON.stringify(state));
+  }
+  function clearSession() {
+    localStorage.removeItem(SESSION_KEY);
+  }
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); }
+    catch { return null; }
+  }
+
+  function getSaved() {
+    try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); }
+    catch { return []; }
+  }
+  function setSaved(list) {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(list));
+  }
+
+  function fmtRemaining(ms) {
+    if (ms <= 0) return "expirado";
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}h${String(m).padStart(2,"0")}`;
+    if (m > 0) return `${m}m`;
+    return `${s}s`;
+  }
+
+  function tick() {
+    if (state.permanent || !state.expiresAt) return;
+    const total = state.expiresAt - state.createdAt;
+    const remaining = state.expiresAt - Date.now();
+    const pct = Math.max(0, Math.min(100, 100 - (remaining / total) * 100));
+    postmark.style.setProperty("--pct", pct.toFixed(1));
+    postmarkLabel.textContent = fmtRemaining(remaining);
+    if (remaining <= 0) {
+      clearInterval(tickTimer);
+      clearInterval(pollTimer);
+      addrText.classList.add("addr-empty");
+      addrText.textContent = "Endereço expirado. Gere um novo.";
+      copyBtn.disabled = true;
+      renewBtn.disabled = true;
+      clearSession();
+    }
+  }
+
+  function loadAddress({ address, createdAt, expiresAt, permanent }, opts = {}) {
+    state = { address, createdAt: createdAt || Date.now(), expiresAt, permanent: !!permanent };
+    addrText.textContent = address;
+    addrText.classList.remove("addr-empty");
+    copyBtn.disabled = false;
+    renewBtn.disabled = !!permanent;
+
+    msgList.innerHTML = "";
+    emptyState.style.display = "block";
+    emptyState.textContent = opts.silent ? "Nenhuma mensagem por enquanto." : "Carregando mensagens…";
+
+    clearInterval(tickTimer);
+    clearInterval(pollTimer);
+
+    if (permanent) {
+      postmark.style.setProperty("--pct", 0);
+      postmarkLabel.textContent = "∞";
+    } else {
+      tick();
+      tickTimer = setInterval(tick, 1000);
+    }
+    saveSession();
+    pollTimer = setInterval(pollInbox, 5000);
+    pollInbox();
+  }
+
+  async function generate() {
+    generateBtn.disabled = true;
+    generateBtn.textContent = "Gerando…";
+    try {
+      const permanent = $("permanentCheck").checked;
+      const payload = permanent
+        ? { permanent: true }
+        : { ttl_minutes: Number(ttlSelect.value) };
+
+      const res = await fetch(`${API_BASE}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(permanent ? authHeaders() : {}) },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "falha ao gerar");
+
+      if (permanent) {
+        const saved = getSaved();
+        saved.unshift({ address: data.address, created_at: data.created_at });
+        setSaved(saved);
+        renderSaved();
+      }
+
+      loadAddress({
+        address: data.address,
+        createdAt: data.created_at,
+        expiresAt: data.expires_at,
+        permanent: data.permanent,
+      });
+    } catch (err) {
+      addrText.textContent = "Erro ao gerar endereço. Confira a API_BASE no código.";
+      console.error(err);
+    } finally {
+      generateBtn.disabled = false;
+      generateBtn.textContent = "Gerar endereço";
+    }
+  }
+
+  function renderSaved() {
+    const list = getSaved();
+    const savedList = $("savedList");
+    const savedEmpty = $("savedEmpty");
+    savedList.innerHTML = "";
+    savedEmpty.style.display = list.length ? "none" : "block";
+
+    for (const item of list) {
+      const li = document.createElement("li");
+      li.className = "msg";
+      const date = new Date(item.created_at).toLocaleDateString("pt-BR");
+      li.innerHTML = `<div class="msg-from">salvo em ${date}</div>
+                      <div class="msg-subject">${escapeHtml(item.address)}</div>`;
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn-ghost msg-delete";
+      delBtn.textContent = "Apagar de vez";
+      delBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!confirm("Apagar este endereço e todas as mensagens dele? Não tem como desfazer.")) return;
+        try {
+          await fetch(`${API_BASE}/api/address/${encodeURIComponent(item.address)}`, { method: "DELETE" });
+        } catch (err) { console.error(err); }
+        setSaved(getSaved().filter((a) => a.address !== item.address));
+        renderSaved();
+        if (state.address === item.address) {
+          addrText.textContent = "Nenhum endereço gerado ainda.";
+          addrText.classList.add("addr-empty");
+          copyBtn.disabled = true;
+          renewBtn.disabled = true;
+          postmark.style.setProperty("--pct", 0);
+          postmarkLabel.textContent = "—";
+          msgList.innerHTML = "";
+          emptyState.style.display = "block";
+          emptyState.textContent = "Gere um endereço para começar a receber mensagens.";
+          clearInterval(tickTimer);
+          clearInterval(pollTimer);
+          clearSession();
+        }
+      });
+      li.appendChild(delBtn);
+
+      if (getToken()) {
+        const claimBtn = document.createElement("button");
+        claimBtn.className = "btn-ghost msg-claim";
+        claimBtn.type = "button";
+        claimBtn.textContent = "Vincular à conta";
+        claimBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          claimAddress(item.address, claimBtn);
+        });
+        li.appendChild(claimBtn);
+      }
+
+      li.addEventListener("click", () => {
+        loadAddress({ address: item.address, createdAt: item.created_at, expiresAt: null, permanent: true });
+      });
+      savedList.appendChild(li);
+    }
+  }
+
+  async function renew() {
+    if (!state.address) return;
+    const ttl_minutes = Number(ttlSelect.value);
+    const res = await fetch(`${API_BASE}/api/renew`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address: state.address, ttl_minutes }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      state.expiresAt = data.expires_at;
+      state.createdAt = Date.now();
+      saveSession();
+    }
+  }
+
+  async function pollInbox() {
+    if (!state.address) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/inbox/${encodeURIComponent(state.address)}`);
+      if (!res.ok) {
+        emptyState.style.display = "block";
+        emptyState.textContent = "Não foi possível carregar as mensagens agora. Tentando de novo em 5s…";
+        return;
+      }
+      const data = await res.json();
+      renderMessages(data.messages || []);
+    } catch (err) {
+      emptyState.style.display = "block";
+      emptyState.textContent = "Erro de conexão com a API. Confira o API_BASE e o ALLOWED_ORIGIN.";
+      console.error(err);
+    }
+  }
+
+  function renderMessages(messages) {
+    msgList.innerHTML = "";
+    emptyState.style.display = messages.length ? "none" : "block";
+    if (!messages.length) {
+      emptyState.textContent = "Nenhuma mensagem por enquanto.";
+    }
+    for (const m of messages) {
+      const li = document.createElement("li");
+      li.className = "msg";
+      const time = new Date(m.received_at).toLocaleTimeString("pt-BR");
+      li.innerHTML = `<div class="msg-from">${escapeHtml(m.from_addr || "desconhecido")} · ${time}</div>
+                      <div class="msg-subject">${escapeHtml(m.subject || "(sem assunto)")}</div>`;
+      li.addEventListener("click", () => openMessage(m.id));
+      msgList.appendChild(li);
+    }
+  }
+
+  async function openMessage(id) {
+    const res = await fetch(`${API_BASE}/api/message/${encodeURIComponent(id)}`);
+    if (!res.ok) return;
+    const msg = await res.json();
+    $("modalSubject").textContent = msg.subject || "(sem assunto)";
+    $("modalFrom").textContent = msg.from_addr || "desconhecido";
+    const iframe = $("modalHtml");
+    const pre = $("modalText");
+    if (msg.html_body) {
+      iframe.style.display = "block";
+      iframe.srcdoc = msg.html_body;
+      pre.style.display = "none";
+    } else {
+      iframe.style.display = "none";
+      pre.style.display = "block";
+      pre.textContent = msg.text_body || "(sem conteúdo)";
+    }
+    $("modalBackdrop").classList.add("open");
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (c) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  generateBtn.addEventListener("click", generate);
+  renewBtn.addEventListener("click", renew);
+  copyBtn.addEventListener("click", async () => {
+    if (!state.address) return;
+    await navigator.clipboard.writeText(state.address);
+    copyBtn.textContent = "Copiado!";
+    setTimeout(() => (copyBtn.textContent = "Copiar"), 1500);
+  });
+  $("modalClose").addEventListener("click", () => $("modalBackdrop").classList.remove("open"));
+  $("modalBackdrop").addEventListener("click", (e) => {
+    if (e.target === $("modalBackdrop")) $("modalBackdrop").classList.remove("open");
+  });
+
+  $("tabLogin").addEventListener("click", () => setAuthMode("login"));
+  $("tabRegister").addEventListener("click", () => setAuthMode("register"));
+  $("authSubmit").addEventListener("click", submitAuth);
+  $("authClose").addEventListener("click", () => $("authBackdrop").classList.remove("open"));
+  $("authBackdrop").addEventListener("click", (e) => {
+    if (e.target === $("authBackdrop")) $("authBackdrop").classList.remove("open");
+  });
+
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  if (API_BASE.includes("COLOQUE-SEU-WORKER-AQUI")) {
+    const banner = document.createElement("div");
+    banner.style.cssText = "background:#3a1f1f;color:#ffcaca;padding:12px 16px;font-size:13px;text-align:center;line-height:1.5;";
+    banner.innerHTML = "⚠️ Configura o <code>API_BASE</code> lá no topo do &lt;script&gt; antes de usar — veja o README.";
+    document.body.prepend(banner);
+  }
+
+  renderAuthBar();
+  renderSaved();
+  syncOwnedAddresses();
+
+  (function restoreSession() {
+    const saved = getSession();
+    if (!saved || !saved.address) return;
+    if (!saved.permanent && saved.expiresAt && saved.expiresAt <= Date.now()) {
+      clearSession();
+      return;
+    }
+    loadAddress(saved, { silent: true });
+  })();
+</script>
+</body>
+</html>

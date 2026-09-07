@@ -1,0 +1,20 @@
+name = "posta-volante-worker"
+main = "src/index.js"
+compatibility_date = "2026-07-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "posta-volante"
+database_id = "COLOQUE_AQUI_O_ID_DO_SEU_D1"   # wrangler d1 create posta-volante
+
+[vars]
+MAIL_DOMAIN = "seu-dominio.com"                 # domínio onde os e-mails temporários serão criados
+ALLOWED_ORIGIN = "https://seu-frontend.pages.dev"
+RETENTION_HOURS = "24"                          # quanto tempo mensagens de endereços NÃO-permanentes ficam guardadas
+
+[triggers]
+crons = ["0 * * * *"]   # roda a limpeza (scheduled()) 1x por hora
+
+# Segredos — nunca vão neste arquivo nem no git. Rode uma vez:
+#   wrangler secret put AUTH_SECRET
+# (string aleatória longa; é o que assina os tokens de sessão do login)

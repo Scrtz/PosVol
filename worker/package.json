@@ -1,0 +1,17 @@
+{
+  "name": "posta-volante-worker",
+  "private": true,
+  "version": "1.0.0",
+  "description": "API + recebimento de e-mail (Cloudflare Email Routing) do Posta Volante",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 execute posta-volante --file=./schema.sql --remote"
+  },
+  "dependencies": {
+    "postal-mime": "^2.2.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.126.0"
+  }
+}
