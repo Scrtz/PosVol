@@ -52,7 +52,7 @@ Sem dependências externas — tudo com Web Crypto, nativo do runtime do Workers
 - Sessão: token `payload.assinatura` em base64url, assinado com **HMAC-SHA256** (`AUTH_SECRET`). Válido por 90 dias. Mandado pelo front-end como `Authorization: Bearer <token>`.
 - Endpoints: `/api/auth/register`, `/api/auth/login`, `/api/auth/me`, `/api/auth/me/addresses`, `/api/auth/claim`.
 
-## Rodando localmente / fazendo deploy
+## Rodando localmente
 
 ### Pré-requisitos
 - Conta Cloudflare com um domínio ativo nela (precisa de DNS na Cloudflare pra usar Email Routing)
