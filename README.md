@@ -6,7 +6,6 @@ E-mail temporário no **seu próprio** domínio, com Cloudflare Email Routing + 
 
 **Isso é um template pra você hospedar sozinho — não é um serviço compartilhado.** Cada pessoa que usa esse código sobe a própria cópia, no próprio domínio, no próprio Cloudflare. Ninguém usa a infraestrutura ou o domínio de outra pessoa, então cada instância é responsável pelo próprio abuso/reputação — veja [Segurança e abuso](#segurança-e-abuso).
 
-📖 **Nunca comprou um domínio ou mexeu com Cloudflare Workers? Vai direto pro [`TUTORIAL.md`](TUTORIAL.md)** — passo a passo completo, desde comprar o domínio até o site no ar.
 
 ![Tela inicial](docs/screenshots/overview.png)
 
