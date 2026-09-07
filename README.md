@@ -4,7 +4,7 @@
 
 E-mail temporário no **seu próprio** domínio, com Cloudflare Email Routing + Workers + D1. Sem servidor pra manter, sem fila de mensagens — o e-mail chega, o Worker escreve no banco, o front-end busca.
 
-**Isso é um template pra você hospedar sozinho — não é um serviço compartilhado.** Cada pessoa que usa esse código sobe a própria cópia, no próprio domínio, no próprio Cloudflare. Ninguém usa a infraestrutura ou o domínio de outra pessoa, então cada instância é responsável pelo próprio abuso/reputação — veja [Segurança e abuso](#segurança-e-abuso).
+**Isso é um template pra você hospedar sozinho — não é um serviço compartilhado.** Cada instância é responsável pelo próprio abuso/reputação — veja [Segurança e abuso](#segurança-e-abuso).
 
 
 ![Tela inicial](docs/screenshots/overview.png)
